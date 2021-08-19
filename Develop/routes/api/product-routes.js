@@ -6,34 +6,33 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // get all products
 router.get('/', (req, res) => {
   // find all products
-  // be sure to include its associated Category and Tag data
   try {
-    const readerData = await Reader.findAll({
-      // Add Book as a second model to JOIN with
-      include: [{ model: LibraryCard }, { model: Book }],
+    const productsData = await Product.findAll({
+      include: [{model: Category},{model: ProductTag},{model: Tag}]
     });
-    res.status(200).json(readerData);
+    res.status(200).json(productsData);
   } catch (err) {
     res.status(500).json(err);
   }
+  // be sure to include its associated Product and Tag data
 });
 
 // get one product
 router.get('/:id', (req, res) => {
   // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+  // be sure to include its associated Product and Tag data
   try {
-    const readerData = await Reader.findByPk(req.params.id, {
-      // Add Book as a second model to JOIN with
-      include: [{ model: LibraryCard }, { model: Book }],
+    const productsData = await Product.findByPk(req.params.id, {
+      // JOIN with travellers, using the Trip through table
+      include: [{model: Category},{model: ProductTag},{model: Tag}]
     });
 
-    if (!readerData) {
-      res.status(404).json({ message: 'No reader found with that id!' });
+    if (!productsData) {
+      res.status(404).json({ message: 'No Product found with this id!' });
       return;
     }
 
-    res.status(200).json(readerData);
+    res.status(200).json(productsData);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -41,6 +40,7 @@ router.get('/:id', (req, res) => {
 
 // create new product
 router.post('/', (req, res) => {
+  
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -49,12 +49,6 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
-    try {
-      const readerData = await Reader.create(req.body);
-      res.status(200).json(readerData);
-    } catch (err) {
-      res.status(400).json(err);
-    }
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
